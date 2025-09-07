@@ -26,12 +26,15 @@ jobs:
           pip install -r automation/requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Restore storage_state.json from Secret
-        run: |
-          mkdir -p automation
-          echo "$NOTE_STORAGE_B64" | base64 -d > automation/storage_state.json
-        env:
-          NOTE_STORAGE_B64: ${{ secrets.NOTE_STORAGE_B64 }}
+-      - name: Restore storage_state.json from Secret
+-        run: |
+-          mkdir -p automation
+-          echo "$NOTE_STORAGE_B64" | base64 -d > automation/storage_state.json
++      - name: Restore storage_state.json from Secret
++        run: |
++          echo "$NOTE_STORAGE_B64" | base64 -d > storage_state.json
+         env:
+           NOTE_STORAGE_B64: ${{ secrets.NOTE_STORAGE_B64 }}
 
       - name: Run note draft (headless)
         run: |
@@ -49,3 +52,11 @@ jobs:
             automation/note_error.png
             automation/debug/**
           if-no-files-found: ignore
+
+      - name: List tree for debug
+        run: |
+          pwd
+          ls -la
+          ls -la automation || true
+          ls -la jp || true
+          [ -f storage_state.json ] && echo "storage_state.json OK (root)" || echo "NO storage_state.json at root"
