@@ -1,0 +1,51 @@
+name: Post Note Draft
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'jp/input.md'   # 日本語の原稿が更新されたときに実行
+
+jobs:
+  post-note:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r automation/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Restore storage_state.json from Secret
+        run: |
+          mkdir -p automation
+          echo "$NOTE_STORAGE_B64" | base64 -d > automation/storage_state.json
+        env:
+          NOTE_STORAGE_B64: ${{ secrets.NOTE_STORAGE_B64 }}
+
+      - name: Run note draft (headless)
+        run: |
+          python automation/note_draft.py --md jp/input.md --headless true
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload screenshots & debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: note-debug
+          path: |
+            automation/note_draft.png
+            automation/note_error.png
+            automation/debug/**
+          if-no-files-found: ignore
