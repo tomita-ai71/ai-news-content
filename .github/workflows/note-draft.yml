@@ -33,10 +33,31 @@ jobs:
           ls -la automation || true
           python -V
 
-      - name: Restore login session
+      - name: Restore storage_state.json from Secret (root)
+        shell: bash
+        env:
+          NOTE_STORAGE_B64: ${{ secrets.NOTE_STORAGE_B64 }}
         run: |
-          echo "${{ secrets.NOTE_STORAGE_JSON }}" | base64 -d > storage_state.json
-          ls -l storage_state.json
+          set -euo pipefail
+          if [ -z "${NOTE_STORAGE_B64:-}" ]; then
+            echo "❌ Secret NOTE_STORAGE_B64 is EMPTY"; exit 1; fi
+
+          python - <<'PY'
+import os, base64, json, sys
+b64 = os.environ.get("NOTE_STORAGE_B64","").strip()
+try:
+    raw = base64.b64decode(b64, validate=True)
+except Exception as e:
+    print("❌ Base64 decode failed:", e); sys.exit(2)
+open("storage_state.json","wb").write(raw)
+
+try:
+    data = json.load(open("storage_state.json","r",encoding="utf-8"))
+    assert "cookies" in data and data["cookies"], "no cookies in storage_state.json"
+    print("✅ storage_state.json restored. cookies:", len(data["cookies"]))
+except Exception as e:
+    print("❌ JSON sanity check failed:", e); sys.exit(3)
+PY
 
       - name: Run note draft (headless)
         run: |
