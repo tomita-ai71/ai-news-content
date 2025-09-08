@@ -20,7 +20,9 @@ def read_markdown(md_path: str):
         if line.strip().startswith("# "):
             title = re.sub(r"^#\s*", "", line.strip()); break
     return (title or "ストーリーニュース"), text
-    
+
+body = sanitize_body(body)
+   
 def sanitize_body(text: str) -> str:
     """
     よく混入するターミナル行を除去・整理。
@@ -270,6 +272,8 @@ def main():
         browser.close()
         print("✅ 下書き投入完了（スクショ: note_draft.png）")
         print("💡 最終公開は手動でご確認ください。")
+
+chmod +x note_draft.py
 
 if __name__ == "__main__":
     main()
