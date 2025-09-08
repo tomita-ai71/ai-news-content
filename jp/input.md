@@ -12,14 +12,3 @@ https://example.com/veo3-launch
   📄 要約: Veo3の価格情報は表面化しました…
 
 タグ: #AI #News
-cd 
-~/note-automation/content echo "" >> 
-jp/input.md git add jp/input.md
-git commit -m "retrigger"
-git push origin main
-
-
-
-
-<!-- retrigger -->
-<!-- retrigger -->
