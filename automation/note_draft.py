@@ -231,6 +231,11 @@ def main():
     title, body = read_markdown(args.md)
     sed -i '' '/title, body = read_markdown(args.md)/a\
     body = sanitize_body(body)
+    if re.match(r'^[^ ]+@[^ ]+ [%#]\s', s):  # zsh/oh-my-zsh系プロンプト
+    drop = True
+if s.strip().startswith('$ '):           # 先頭の$ を落としたければ
+    drop = True
+
 ' automation/note_draft.py
     if args.title.strip(): title = args.title.strip()
     headless = (args.headless == "true")
