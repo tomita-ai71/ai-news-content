@@ -208,10 +208,6 @@ def main():
 
     title, body = read_markdown(args.md)
     body = sanitize_body(body)
-
-    if args.title.strip(): title = args.title.strip()
-    headless = (args.headless == "true")
-
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
         context = browser.new_context(
