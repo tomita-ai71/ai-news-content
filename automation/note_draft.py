@@ -213,7 +213,6 @@ def main():
 if s.strip().startswith('$ '):           # 先頭の$ を落としたければ
     drop = True
 
-' automation/note_draft.py
     if args.title.strip(): title = args.title.strip()
     headless = (args.headless == "true")
 
