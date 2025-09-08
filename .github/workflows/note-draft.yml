@@ -2,53 +2,45 @@ name: Post Note Draft
 
 on:
   push:
-    branches: [ main ]
     paths:
-      - 'jp/input.md'   # 日本語の原稿を更新したら実行
+      - "jp/input.md"
 
 jobs:
   post-note:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
-      - name: Install Playwright (Chromium)
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r automation/requirements.txt
-          python -m playwright install --with-deps chromium
+          pip install playwright
+          playwright install --with-deps chromium
 
-      - name: Restore storage_state.json from Secret (root)
-        run: |
-          echo "$NOTE_STORAGE_B64" | base64 -d > storage_state.json
-          test -s storage_state.json && echo "storage_state.json restored" || (echo "missing storage_state.json" && exit 1)
-        env:
-          NOTE_STORAGE_B64: ${{ secrets.NOTE_STORAGE_B64 }}
-
-      - name: List tree for debug
+      - name: Debug check
         run: |
           pwd
           ls -la
           ls -la jp || true
           ls -la automation || true
           python -V
-          if [ -s storage_state.json ]; then
-            echo "storage_state.json OK (root)"; wc -c storage_state.json;
-          else
-            echo "NO storage_state.json at root"; exit 1;
-          fi
+
+      - name: Restore login session
+        run: |
+          echo "${{ secrets.NOTE_STORAGE_JSON }}" | base64 -d > storage_state.json
+          ls -l storage_state.json
 
       - name: Run note draft (headless)
         run: |
-          python -u automation/note_draft.py --md jp/input.md --headless true
+          python automation/note_draft.py --md jp/input.md --headless true
         env:
           PYTHONUNBUFFERED: "1"
 
@@ -58,8 +50,6 @@ jobs:
         with:
           name: note-debug
           path: |
-            note_draft.png
-            note_error.png
             automation/note_draft.png
             automation/note_error.png
             automation/debug/**
