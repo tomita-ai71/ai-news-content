@@ -21,28 +21,6 @@ def read_markdown(md_path: str):
             title = re.sub(r"^#\s*", "", line.strip()); break
     return (title or "ストーリーニュース"), text
    
-def sanitize_body(text: str) -> str:
-    """
-    よく混入するターミナル行を除去・整理。
-    - 行頭が 'git ', 'echo ', 'ls ', 'cd ', '# '（コメント）など
-    - シェル展開っぽい '>>', '~/note-automation', '$ ' を含む行
-    - 末尾に連続する空行を圧縮
-    """
-    lines = []
-    for raw in text.splitlines():
-        s = raw.rstrip()
-        drop = False
-        if re.match(r'^\s*(git|echo|ls|cd|pwd|cat|chmod|python3?|pip|brew)\b', s): drop = True
-        if re.search(r'(\>\>|\$\s|~/note-automation|^\s*#\s*retrigger\b)', s):   drop = True
-        if s in ('d',): drop = True
-        if not drop:
-            lines.append(s)
-    # 末尾の空行を1つに圧縮
-    while lines and lines[-1] == '':
-        lines.pop()
-    lines.append('')  # 末尾にちょうど1つだけ空行
-    return '\n'.join(lines)
-
 def accept_banners(page):
     for sel in [
         'button:has-text("同意")','button:has-text("同意して続行")',
@@ -285,28 +263,6 @@ cat >> automation/note_draft.py <<'PY'
 # --- sanitize stray shell-like lines from markdown body ---
 import re
 
-def sanitize_body(text: str) -> str:
-    """よく混入するターミナル行/操作ログを除去して本文をクリーンにする。"""
-    lines = []
-    for raw in text.splitlines():
-        s = raw.rstrip()
-        drop = False
-        # 先頭がシェルコマンドっぽい
-        if re.match(r'^\s*(git|echo|ls|cd|pwd|cat|chmod|python3?|pip|brew)\b', s):
-            drop = True
-        # リダイレクト/パス/コメント合図など
-        if re.search(r'(\>\>|\$\s|~/note-automation|^\s*#\s*retrigger\b)', s):
-            drop = True
-        # 迷子の単独 'd'
-        if s == 'd':
-            drop = True
-        if not drop:
-            lines.append(s)
-    # 末尾の空行を1つに
-    while lines and lines[-1] == '':
-        lines.pop()
-    lines.append('')
-    return '\n'.join(lines)
 PY
 
 if __name__ == "__main__":
