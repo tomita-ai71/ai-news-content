@@ -20,8 +20,6 @@ def read_markdown(md_path: str):
         if line.strip().startswith("# "):
             title = re.sub(r"^#\s*", "", line.strip()); break
     return (title or "ストーリーニュース"), text
-
-body = sanitize_body(body)
    
 def sanitize_body(text: str) -> str:
     """
@@ -231,6 +229,9 @@ def main():
     args = ap.parse_args()
 
     title, body = read_markdown(args.md)
+    sed -i '' '/title, body = read_markdown(args.md)/a\
+    body = sanitize_body(body)
+' automation/note_draft.py
     if args.title.strip(): title = args.title.strip()
     headless = (args.headless == "true")
 
@@ -274,6 +275,34 @@ def main():
         print("💡 最終公開は手動でご確認ください。")
 
 chmod +x note_draft.py
+
+cat >> automation/note_draft.py <<'PY'
+# --- sanitize stray shell-like lines from markdown body ---
+import re
+
+def sanitize_body(text: str) -> str:
+    """よく混入するターミナル行/操作ログを除去して本文をクリーンにする。"""
+    lines = []
+    for raw in text.splitlines():
+        s = raw.rstrip()
+        drop = False
+        # 先頭がシェルコマンドっぽい
+        if re.match(r'^\s*(git|echo|ls|cd|pwd|cat|chmod|python3?|pip|brew)\b', s):
+            drop = True
+        # リダイレクト/パス/コメント合図など
+        if re.search(r'(\>\>|\$\s|~/note-automation|^\s*#\s*retrigger\b)', s):
+            drop = True
+        # 迷子の単独 'd'
+        if s == 'd':
+            drop = True
+        if not drop:
+            lines.append(s)
+    # 末尾の空行を1つに
+    while lines and lines[-1] == '':
+        lines.pop()
+    lines.append('')
+    return '\n'.join(lines)
+PY
 
 if __name__ == "__main__":
     main()
