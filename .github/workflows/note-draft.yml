@@ -1,6 +1,8 @@
 name: Post Note Draft
 
 on:
+  schedule:
+    - cron: "0 21 * * *"   # JST 6:00 に相当
   workflow_dispatch:
   push:
     branches: [ main ]
