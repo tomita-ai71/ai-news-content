@@ -1,5 +1,11 @@
 cd ~/note-automation/content
-echo "<!-- refresh login -->" >> jp/input.md
+echo "" >> jp/input.md
 git add jp/input.md
-git commit -m "refresh login"
+git commit -m "retrigger"
 git push origin main
+
+
+
+
+<!-- retrigger -->
+<!-- retrigger -->
