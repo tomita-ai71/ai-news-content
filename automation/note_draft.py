@@ -306,3 +306,28 @@ PY
 
 if __name__ == "__main__":
     main()
+# --- sanitize stray shell-like lines from markdown body ---
+import re
+
+def sanitize_body(text: str) -> str:
+    """よく混入するターミナル行/操作ログを除去して本文をクリーンにする。"""
+    lines = []
+    for raw in text.splitlines():
+        s = raw.rstrip()
+        drop = False
+        # 先頭がシェルコマンドっぽい
+        if re.match(r'^\s*(git|echo|ls|cd|pwd|cat|chmod|python3?|pip|brew)\b', s):
+            drop = True
+        # リダイレクト/パス/コメント合図など
+        if re.search(r'(\>\>|\$\s|~/note-automation|^\s*#\s*retrigger\b)', s):
+            drop = True
+        # 迷子の単独 'd'
+        if s == 'd':
+            drop = True
+        if not drop:
+            lines.append(s)
+    # 末尾の空行を1つに
+    while lines and lines[-1] == '':
+        lines.pop()
+    lines.append('')
+    return '\n'.join(lines)
