@@ -5,6 +5,41 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 import re
 
+# --- sanitize stray shell-like lines from markdown body ---
+import re
+
+def sanitize_body(text: str) -> str:
+    """
+    よく混入するターミナル行/操作ログを除去して本文をクリーンにする。
+    - 'git ...' などのコマンド行
+    - '>>' リダイレクト や '$ ' プロンプト
+    - retrigger 用コメント など
+    """
+    lines = []
+    for raw in text.splitlines():
+        s = raw.rstrip()
+        drop = False
+
+        # 典型的なシェルコマンド行
+        if re.match(r'^\s*(git|echo|ls|cd|pwd|cat|chmod|python3?|pip|brew)\b', s):
+            drop = True
+        # リダイレクト/プロンプト/作業用コメント
+        if re.search(r'(>>|\$\s|~/note-automation|^#\s*retrigger\b)', s):
+            drop = True
+        # 明らかなゴミ
+        if s.strip() == 'd':
+            drop = True
+
+        if not drop:
+            lines.append(s)
+
+    # 末尾の空行を1つに整える
+    while lines and lines[-1] == "":
+        lines.pop()
+    lines.append("")
+    return "\n".join(lines)
+
+
 STORAGE = "storage_state.json"
 NEW_NOTE_URLS = [
     "https://note.com/notes/new",          # 旧UI
