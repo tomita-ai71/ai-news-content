@@ -31,6 +31,9 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
+      - name: Build drafts for JP (X first & longform when follow-ups)
+        run: python -u automation/build_story_md.py --only jp
+
       - name: Restore storage_state.json from Secret (root)
         shell: bash
         env:
