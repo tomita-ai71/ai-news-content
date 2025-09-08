@@ -13,3 +13,4 @@ https://example.com/veo3-launch
 
 タグ: #AI #News
 <!-- retrigger -->
+<!-- retrigger -->
