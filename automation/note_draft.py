@@ -207,7 +207,6 @@ def main():
     args = ap.parse_args()
 
     title, body = read_markdown(args.md)
-    sed -i '' '/title, body = read_markdown(args.md)/a\
     body = sanitize_body(body)
     if re.match(r'^[^ ]+@[^ ]+ [%#]\s', s):  # zsh/oh-my-zsh系プロンプト
     drop = True
@@ -257,9 +256,7 @@ if s.strip().startswith('$ '):           # 先頭の$ を落としたければ
         print("✅ 下書き投入完了（スクショ: note_draft.png）")
         print("💡 最終公開は手動でご確認ください。")
 
-chmod +x note_draft.py
 
-cat >> automation/note_draft.py <<'PY'
 # --- sanitize stray shell-like lines from markdown body ---
 import re
 
