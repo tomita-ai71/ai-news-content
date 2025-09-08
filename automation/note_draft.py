@@ -208,10 +208,6 @@ def main():
 
     title, body = read_markdown(args.md)
     body = sanitize_body(body)
-    if re.match(r'^[^ ]+@[^ ]+ [%#]\s', s):  # zsh/oh-my-zsh系プロンプト
-    drop = True
-if s.strip().startswith('$ '):           # 先頭の$ を落としたければ
-    drop = True
 
     if args.title.strip(): title = args.title.strip()
     headless = (args.headless == "true")
