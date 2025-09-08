@@ -12,3 +12,4 @@ https://example.com/veo3-launch
   📄 要約: Veo3の価格情報は表面化しました…
 
 タグ: #AI #News
+<!-- retrigger -->
