@@ -251,7 +251,6 @@ def main():
 # --- sanitize stray shell-like lines from markdown body ---
 import re
 
-PY
 
 if __name__ == "__main__":
     main()
