@@ -211,8 +211,15 @@ def main():
             # 最新1件のみ提案（多いとXが雑音になるため）
             st = first[0]
             a = st["items"][0]
-            jp_x = f"【速報】{a['title']}｜出典: {a['source']}｜{a['link']}"
-            write_file(JP_X, jp_x)
+            # 既存:
+            # jp_x = f"【速報】{a['title']}｜出典: {a['source']}｜{a['link']}"
+
+            # 置換:
+            title_ja = a["title"]
+            if looks_english(title_ja):
+                title_ja = ja_translate(title_ja)
+            jp_x = f"【速報】{title_ja}｜出典: {a['source']}｜{a['link']}"
+
         # 続報→Note
         targets = pick_longform_targets(state, "jp", cfg["jp"]["max_longform_per_run"])
         if targets:
