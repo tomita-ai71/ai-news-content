@@ -17,22 +17,12 @@ on:
       - ".github/workflows/note-draft.yml"
 
 jobs:
-  gen-and-post:
-    runs-on: ubuntu-latest
-    env:
-      HEADLESS: ${{ github.event.inputs.headless == '' && 'true' || github.event.inputs.headless }}
-    steps:
-      # ...
-      - name: Generate & post draft (JP only when longform exists)
-        if: ${{ hashFiles('automation/flags/jp_longform_ready') != '' }}
-        run: |
-          python -u automation/note_draft.py --lang jp --headless "${HEADLESS}"
-
   post-note:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    # ←以下は今のままでOK
-
+    timeout-minutes: 35
+    env:
+      # 手動実行時の headless 入力が空なら true を既定に
+      HEADLESS: ${{ github.event.inputs.headless == '' && 'true' || github.event.inputs.headless }}
 
     steps:
       - name: Checkout repository
@@ -50,6 +40,7 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
+      # ここで毎回 生成：jp/x_first.txt と（続報あれば）jp/input.md を作る
       - name: Build drafts for JP (X first & longform when follow-ups)
         run: python -u automation/build_story_md.py --only jp
 
@@ -63,9 +54,11 @@ jobs:
             echo "❌ Secret NOTE_STORAGE_B64 is EMPTY"; exit 1
           fi
           echo "${NOTE_STORAGE_B64}" | base64 -d > storage_state.json
-          # JSON サニティチェック（ヒアドキュメントを避けて -c で実行）
-          python -c "import json,sys; d=json.load(open('storage_state.json','r',encoding='utf-8')); \
-            sys.exit(0 if isinstance(d,dict) and d.get('cookies') else 3)"
+          python - <<'PY'
+import json,sys
+d=json.load(open('storage_state.json','r',encoding='utf-8'))
+sys.exit(0 if isinstance(d,dict) and d.get('cookies') else 3)
+PY
           echo "✅ storage_state.json restored"
 
       - name: List tree for debug
@@ -81,28 +74,28 @@ jobs:
             echo "NO storage_state.json at root"; exit 1;
           fi
 
-      - name: Run note draft (headless)
+      # ❗続報がある日だけ Note 下書きを投稿（フラグで制御）
+      - name: Generate & post draft (JP only when longform exists)
+        if: ${{ hashFiles('automation/flags/jp_longform_ready') != '' }}
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          python -u automation/note_draft.py --md jp/input.md --headless true
+          python -u automation/note_draft.py --lang jp --headless "${HEADLESS}"
 
+      # 成果物とデバッグを常に回収
       - name: Upload screenshots & debug artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: note-debug
+          name: note-draft-jp
           path: |
             note_draft.png
             note_error.png
             automation/note_draft.png
             automation/note_error.png
             automation/debug/**
-          if-no-files-found: ignore
-          
-      - name: Generate & post draft (JP only when longform exists)
-        if: ${{ hashFiles('automation/flags/jp_longform_ready') != '' }}
-        env:
-          PYTHONUNBUFFERED: "1"
-        run: |
-          python -u automation/note_draft.py --lang jp --headless true
+            automation/flags/**
+            jp/input.md
+            jp/x_first.txt
+          if-no-files-found: warn
+          retention-days: 7
