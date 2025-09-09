@@ -3,3 +3,5 @@ PyYAML==6.*
 sentence-transformers==3.*
 faiss-cpu==1.8.*
 numpy==1.26.*
+transformers==4.*
+sentencepiece==0.1.99
