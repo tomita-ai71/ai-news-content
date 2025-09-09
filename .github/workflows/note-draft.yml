@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      # 手動実行時の headless 入力が空なら true を既定に
       HEADLESS: ${{ github.event.inputs.headless == '' && 'true' || github.event.inputs.headless }}
 
     steps:
@@ -40,7 +39,7 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
-      # ここで毎回 生成：jp/x_first.txt と（続報あれば）jp/input.md を作る
+      # 生成（毎回実行）：jp/x_first.txt と、続報があれば jp/input.md
       - name: Build drafts for JP (X first & longform when follow-ups)
         run: python -u automation/build_story_md.py --only jp
 
@@ -74,7 +73,7 @@ PY
             echo "NO storage_state.json at root"; exit 1;
           fi
 
-      # ❗続報がある日だけ Note 下書きを投稿（フラグで制御）
+      # 続報がある日だけ Note に下書き投稿（フラグで制御）
       - name: Generate & post draft (JP only when longform exists)
         if: ${{ hashFiles('automation/flags/jp_longform_ready') != '' }}
         env:
@@ -82,7 +81,7 @@ PY
         run: |
           python -u automation/note_draft.py --lang jp --headless "${HEADLESS}"
 
-      # 成果物とデバッグを常に回収
+      # 成果物回収（毎回）
       - name: Upload screenshots & debug artifacts
         if: always()
         uses: actions/upload-artifact@v4
