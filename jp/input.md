@@ -1,26 +1,13 @@
-# 【速報】ストーリーニュース
+# 生成（JP）
+- name: Generate story markdown (JP)
+  env:
+    PYTHONUNBUFFERED: "1"
+  run: |
+    python -u automation/generate_story.py --config automation/config.yml
 
-### 📌 ストーリーニュース
-- 第一報（2025/09/06(土) 14:33 JST）: 
-GoogleはVeo3ビデオ生成モデルを発表しました (TechCrunch AI) 
-https://example.com/veo3-launch  
-  📄 要約: GoogleはVeo3ビデオ生成モデルを発表しました…
-
-#### 続報
-- 2025/09/07(日) 02:33 JST: Veo3の価格情報は表面化しました 
-(r/GenerativeAI) https://reddit.com/r/GenerativeAI/veo3-pricing  
-  📄 要約: Veo3の価格情報は表面化しました…
-
-タグ: #AI #News
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
-<!-- retrigger -->
+# 投稿（JP） 既存の note_draft.py を活用
+- name: Post draft to Note (JP)
+  env:
+    PYTHONUNBUFFERED: "1"
+  run: |
+    python -u automation/note_draft.py --lang jp --headless "${{ github.event.inputs.headless || 'true' }}"
