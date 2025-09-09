@@ -84,5 +84,6 @@ jobs:
       - name: Generate & post draft (JP only when longform exists)
         if: ${{ hashFiles('automation/flags/jp_longform_ready') != '' }}
         env:
-        PYTHONUNBUFFERED: "1"
-        run: python -u automation/note_draft.py --lang jp --headless "${{ github.event.inputs.headless || 'true' }}"
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python -u automation/note_draft.py --lang jp --headless true
