@@ -29,6 +29,9 @@ EN_MD = ROOT / "en" / "longform.md"
 JP_X  = ROOT / "jp" / "x_first.txt"
 EN_X  = ROOT / "en" / "x_first.txt"
 
+FLAGS = ROOT / "automation" / "flags"
+FLAG_JP = FLAGS / "jp_longform_ready"
+
 # --- 翻訳：英語→日本語（短文向け） ---
 _translator = None
 def ja_translate(text: str) -> str:
@@ -257,29 +260,41 @@ def main():
     state=load_state()
 
     # JP処理
-    if args.only in ("jp","both"):
-        jp_items = collect(cfg["jp"]["feeds"], cfg["jp"]["max_items_per_feed"])
-        state = cluster_incremental("jp", jp_items, float(cfg["jp"]["min_similarity"]), state)
-        # 初報→X
-        first = pick_first_reports(state, "jp")
-        if first:
-            # 最新1件のみ提案（多いとXが雑音になるため）
-            st = first[0]
-            a = st["items"][0]
-            # 既存:
-            # jp_x = f"【速報】{a['title']}｜出典: {a['source']}｜{a['link']}"
+    # JP処理
+if args.only in ("jp","both"):
+    jp_items = collect(cfg["jp"]["feeds"], cfg["jp"]["max_items_per_feed"])
+    state = cluster_incremental("jp", jp_items, float(cfg["jp"]["min_similarity"]), state)
 
-            # 置換:
-            title_ja = a["title"]
-            if looks_english(title_ja):
-                title_ja = ja_translate(title_ja)
-            jp_x = f"【速報】{title_ja}｜出典: {a['source']}｜{a['link']}"
+    # ------- 初報 → X（常に出力） -------
+    first = pick_first_reports(state, "jp")
+    if first:
+        st = first[0]
+        a = st["items"][0]
+        title_ja = a["title"]
+        if looks_english(title_ja):
+            title_ja = ja_translate(title_ja)
+        jp_x = f"【速報】{title_ja}｜出典: {a['source']}｜{a['link']}"
+    else:
+        jp_x = "（本日は速報なし）"
+    write_file(JP_X, jp_x)  # ← 毎回書き出す
 
-        # 続報→Note
-        targets = pick_longform_targets(state, "jp", cfg["jp"]["max_longform_per_run"])
-        if targets:
-            md = render_longform_md(targets[0], "jp")
-            write_file(JP_MD, md)
+    # ------- 続報あり → Note長文化 + フラグON、無ければOFF -------
+    FLAGS.mkdir(parents=True, exist_ok=True)
+
+    # 続報の付いた候補（件数上限あり）
+    targets = pick_longform_targets(state, "jp", cfg["jp"]["max_longform_per_run"])
+
+    if targets:
+        # もっとも新しいストーリーだけ長文化
+        md = render_longform_md(targets[0], "jp")
+        write_file(JP_MD, md)
+        FLAG_JP.write_text("ready\n", encoding="utf-8")
+    else:
+        # フラグOFF、旧 md は削除して誤投稿を防ぐ
+        if FLAG_JP.exists():
+            FLAG_JP.unlink()
+        if JP_MD.exists():
+            JP_MD.unlink()
 
     # EN処理
     if args.only in ("en","both"):
