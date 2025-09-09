@@ -10,12 +10,14 @@ X→（続報が付いたら）長文化：JP=Note, EN=Reddit/Medium
   jp/input.md (Note下書き), en/longform.md (Reddit/Medium下書き)
 """
 from __future__ import annotations
+# 先頭あたり
 import argparse, datetime as dt, json, textwrap
 from pathlib import Path
 from typing import Any, Dict, List
 import feedparser
 import numpy as np
 from sentence_transformers import SentenceTransformer
+import re   # ← 追加
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG  = ROOT / "automation" / "config.yml"
@@ -150,9 +152,19 @@ def render_longform_md(story:Dict[str,Any], locale:str) -> str:
                   "—", "Sources: see links above."]
     return "\n".join(lines)
 
-def write_file(path:Path, text:str):
+# 置換：write_file 関数
+def write_file(path: Path, text: str):
+    """
+    生成物をファイルへ書き出す前に、制御用コメントやノイズを根治的に除去。
+    - <!-- retrigger --> を完全除去
+    - 3行以上の連続空行を2行に圧縮
+    - 末尾の空白/改行を整形（最後は改行1つ）
+    """
+    clean = re.sub(r'<!--\s*retrigger\s*-->\s*', '', text)
+    clean = re.sub(r'(?:\n[ \t]*){3,}', '\n\n', clean)  # 空行3+ → 2
+    clean = clean.rstrip() + "\n"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text.strip()+"\n", encoding="utf-8")
+    path.write_text(clean, encoding="utf-8")
 
 def main():
     import yaml
