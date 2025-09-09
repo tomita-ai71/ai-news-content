@@ -28,8 +28,6 @@ jobs:
         run: |
           python -u automation/note_draft.py --lang jp --headless "${HEADLESS}"
 
-
-jobs:
   post-note:
     runs-on: ubuntu-latest
     timeout-minutes: 20
