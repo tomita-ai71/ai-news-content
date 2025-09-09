@@ -1,34 +1,9 @@
-# === News Story System config ===
-# JPのみ先行。ENは後から追加予定。
-
-jp:
-  # 収集するRSS（最初は少なめ＆信頼筋）
-  feeds:
-    - https://japan.cnet.com/rss/all.rdf
-    - https://techcrunch.com/feed/
-    - https://openai.com/blog/rss/
-    - https://www.reddit.com/r/MachineLearning/.rss
-    - https://www.reddit.com/r/LocalLLaMA/.rss
-    - https://www.reddit.com/r/ArtificialIntelligence/.rss
-
-    # 必要に応じて追加OK（ITmedia, The Verge など）
-    # - https://www.theverge.com/rss/index.xml
-
-  # 各RSSから見る件数（多すぎるとノイズ増）
-  max_items_per_feed: 10
-
-  # 「続報」とみなす類似度しきい値（0〜1）。運用で微調整
-  min_similarity: 0.72
-
-  # 1回の実行で長文化（Note下書き）するストーリー数の上限
-  max_longform_per_run: 1
-
-# 予備（将来ENを有効化する時に使います）
-en:
-  feeds:
-    - https://techcrunch.com/feed/
-    - https://www.theverge.com/rss/index.xml
-  max_items_per_feed: 10
-  min_similarity: 0.72
-  max_longform_per_run: 1
-# kick run
+feeds:
+  - https://techcrunch.com/feed/
+  - https://japan.cnet.com/rss/all.rdf
+  - https://openai.com/blog/rss/
+similarity_threshold: 0.72
+per_feed_limit: 10
+archive_days: 7
+emit_jp: true
+emit_en: false   # ← ENは無効
