@@ -2,18 +2,39 @@ name: Post Note Draft
 
 on:
   schedule:
-    - cron: "0 21 * * *"   # JST 6:00 に相当
+    - cron: "0 21 * * *"   # JST 6:00
   workflow_dispatch:
+    inputs:
+      headless:
+        description: "Run playwright headless"
+        type: boolean
+        default: true
   push:
     branches: [ main ]
     paths:
+      - "automation/**"
       - "jp/input.md"
+      - ".github/workflows/note-draft.yml"
+
+jobs:
+  gen-and-post:
+    runs-on: ubuntu-latest
+    env:
+      HEADLESS: ${{ github.event.inputs.headless == '' && 'true' || github.event.inputs.headless }}
+    steps:
+      # ...
+      - name: Generate & post draft (JP only when longform exists)
+        if: ${{ hashFiles('automation/flags/jp_longform_ready') != '' }}
+        run: |
+          python -u automation/note_draft.py --lang jp --headless "${HEADLESS}"
+
 
 jobs:
   post-note:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # ←以下は今のままでOK
+
 
     steps:
       - name: Checkout repository
