@@ -53,6 +53,30 @@ def looks_english(s: str) -> bool:
     core = re.sub(r'https?://\S+|[^A-Za-z ]', '', s or "")
     letters = sum(c.isalpha() for c in core)
     return letters > 0 and (letters / max(1, len(core))) > 0.5
+# --- 翻訳：英語→日本語（短文向け） ---
+_translator = None
+def ja_translate(text: str) -> str:
+    """必要な時だけ初期化して英→日翻訳。失敗時は原文返し。"""
+    global _translator
+    if not text:
+        return text
+    try:
+        if _translator is None:
+            from transformers import pipeline  # 念のため局所importでもOK
+            _translator = pipeline("translation", model="Helsinki-NLP/opus-mt-en-jap")
+        t = text.strip()
+        if len(t) > 220:  # 極端に長いタイトルは切り詰め
+            t = t[:200] + "..."
+        return _translator(t, max_length=256)[0]["translation_text"]
+    except Exception:
+        return text
+
+def looks_english(s: str) -> bool:
+    """英文字比率でざっくり英語判定（URL/記号は除外）。"""
+    import re
+    core = re.sub(r'https?://\S+|[^A-Za-z ]', '', s or "")
+    letters = sum(c.isalpha() for c in core)
+    return letters > 0 and (letters / max(1, len(core))) > 0.5
 
 def load_cfg() -> Dict[str,Any]:
     import yaml
