@@ -18,6 +18,7 @@ import feedparser
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import re   # ← 追加
+from transformers import pipeline
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG  = ROOT / "automation" / "config.yml"
