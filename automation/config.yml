@@ -7,6 +7,10 @@ jp:
     - https://japan.cnet.com/rss/all.rdf
     - https://techcrunch.com/feed/
     - https://openai.com/blog/rss/
+    - https://www.reddit.com/r/MachineLearning/.rss
+    - https://www.reddit.com/r/LocalLLaMA/.rss
+    - https://www.reddit.com/r/ArtificialIntelligence/.rss
+
     # 必要に応じて追加OK（ITmedia, The Verge など）
     # - https://www.theverge.com/rss/index.xml
 
