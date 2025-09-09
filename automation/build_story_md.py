@@ -183,8 +183,16 @@ def render_longform_md(story:Dict[str,Any], locale:str) -> str:
                "", "## 全体像（なぜ重要か）",
                "初報と続報をひとつの物語として整理しました。", "",
                "## タイムライン"]
-        for a in items:
-            lines.append(f"- {a['date']}: {a['title']}（出典: {a['source']}）[{a['link']}]")
+        # 既存:
+        # for a in items:
+        #     lines.append(f"- {a['date']}: {a['title']}（出典: {a['source']}）[{a['link']}]")
+
+        # 置換:
+          for a in items:
+              t = a["title"]
+            if looks_english(t):
+              t = ja_translate(t)
+        lines.append(f"- {a['date']}: {t}（出典: {a['source']}）[{a['link']}]")
         lines += ["", "## いま時点の理解", "- 事実と公式発表を中心に速報整理。", "",
                   "## 次の注目ポイント", "- 製品公開・規制・公式イベントの続報。", "",
                   "—", "出典まとめ：各タイムラインのリンク参照"]
