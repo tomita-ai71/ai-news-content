@@ -172,42 +172,65 @@ def pick_longform_targets(state:Dict[str,Any], locale:str, limit:int) -> List[Di
     cand.sort(key=lambda s: last_date(s), reverse=True)
     return cand[:limit]
 
-def render_longform_md(story:Dict[str,Any], locale:str) -> str:
-    items=sorted(story["items"], key=lambda x: x["date"])
-    today=dt.date.today().isoformat()
-    head=items[-1]
-    if locale=="jp":
-        lines=[f"# AIニュースストーリー（最終更新: {today}）","",
-               "**3行要約**",
-               f"- {head['title']}（{head['source']}）",
-               "", "## 全体像（なぜ重要か）",
-               "初報と続報をひとつの物語として整理しました。", "",
-               "## タイムライン"]
-        # 既存:
-        # for a in items:
-        #     lines.append(f"- {a['date']}: {a['title']}（出典: {a['source']}）[{a['link']}]")
+def render_longform_md(story: Dict[str, Any], locale: str) -> str:
+    items = sorted(story["items"], key=lambda x: x["date"])
+    today = dt.date.today().isoformat()
+    head = items[-1]
 
-        # 置換:
-          for a in items:
-              t = a["title"]
+    if locale == "jp":
+        lines = [
+            f"# AIニュースストーリー（最終更新: {today})",
+            "",
+            "**3行要約**",
+            f"- {ja_translate(head['title']) if looks_english(head['title']) else head['title']}（{head['source']}）",
+            "",
+            "## 全体像（なぜ重要か）",
+            "初報と続報をひとつの物語として整理しました。",
+            "",
+            "## タイムライン",
+        ]
+        for a in items:
+            t = a["title"]
             if looks_english(t):
-              t = ja_translate(t)
-        lines.append(f"- {a['date']}: {t}（出典: {a['source']}）[{a['link']}]")
-        lines += ["", "## いま時点の理解", "- 事実と公式発表を中心に速報整理。", "",
-                  "## 次の注目ポイント", "- 製品公開・規制・公式イベントの続報。", "",
-                  "—", "出典まとめ：各タイムラインのリンク参照"]
+                t = ja_translate(t)
+            lines.append(f"- {a['date']}: {t}（出典: {a['source']}）[{a['link']}]")
+        lines += [
+            "",
+            "## いま時点の理解",
+            "- 事実と公式発表を中心に速報整理。",
+            "",
+            "## 次の注目ポイント",
+            "- 製品公開・規制・公式イベントの続報。",
+            "",
+            "—",
+            "出典まとめ：各タイムラインのリンク参照",
+        ]
     else:
-        lines=[f"# AI News Story (Last updated: {today})","",
-               "**In 3 bullets**",
-               f"- {head['title']} ({head['source']})",
-               "", "## Overview",
-               "We merged the first report and follow-ups into one storyline.", "",
-               "## Timeline"]
+        lines = [
+            f"# AI News Story (Last updated: {today})",
+            "",
+            "**In 3 bullets**",
+            f"- {head['title']} ({head['source']})",
+            "",
+            "## Overview",
+            "We merged the first report and follow-ups into one storyline.",
+            "",
+            "## Timeline",
+        ]
         for a in items:
             lines.append(f"- {a['date']}: {a['title']} (source: {a['source']}) [{a['link']}]")
-        lines += ["", "## Current understanding", "- Factual summary from official sources.", "",
-                  "## What to watch next", "- Releases, regulations, and official events.", "",
-                  "—", "Sources: see links above."]
+        lines += [
+            "",
+            "## Current understanding",
+            "- Factual summary from official sources.",
+            "",
+            "## What to watch next",
+            "- Releases, regulations, and official events.",
+            "",
+            "—",
+            "Sources: see links above.",
+        ]
+
     return "\n".join(lines)
 
 # 置換：write_file 関数
